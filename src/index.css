@@ -1,849 +1,400 @@
-import { useEffect, useState } from 'react';
-import { BrowserRouter, Navigate, Route, Routes, Link, useNavigate, useParams } from 'react-router-dom';
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+:root {
+  --bg: #f4f7fb;
+  --card: #ffffff;
+  --primary: #2f6fed;
+  --primary-dark: #1f4ec5;
+  --success: #1bbf7a;
+  --warning: #ffb020;
+  --danger: #ef5350;
+  --text: #1c2430;
+  --muted: #6b7280;
+  --border: #e5e7eb;
+  --shadow: 0 16px 30px rgba(31, 41, 55, 0.08);
+}
 
-async function apiRequest(url, options = {}, token) {
-  const response = await fetch(`${API_BASE}${url}`, {
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      ...(options.headers || {}),
-    },
-  });
+* {
+  box-sizing: border-box;
+}
 
-  const contentType = response.headers.get('content-type') || '';
-  const payload = contentType.includes('application/json') ? await response.json() : await response.text();
+html, body, #root {
+  margin: 0;
+  min-height: 100%;
+  font-family: 'Inter', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
 
-  if (!response.ok) {
-    throw new Error(payload?.message || 'Request failed');
+body {
+  min-height: 100vh;
+}
+
+button, input, select, textarea {
+  font: inherit;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.app-shell {
+  min-height: 100vh;
+}
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #fff;
+  border-bottom: 1px solid var(--border);
+  padding: 18px 32px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.logo {
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: var(--primary);
+}
+
+.nav {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.nav a, .nav button {
+  border: none;
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.page {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 32px 20px 64px;
+}
+
+.grid {
+  display: grid;
+  gap: 20px;
+}
+
+.grid-3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.grid-2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  box-shadow: var(--shadow);
+  padding: 22px;
+}
+
+.stat-card {
+  min-height: 120px;
+}
+
+.stat-label {
+  color: var(--muted);
+  font-size: 0.82rem;
+  margin-bottom: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.stat-value {
+  font-size: 2rem;
+  font-weight: 800;
+}
+
+.section-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 18px;
+}
+
+.section-title h2 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.primary-btn, .secondary-btn, .danger-btn {
+  border: none;
+  padding: 12px 18px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 700;
+  transition: 0.2s ease;
+}
+
+.primary-btn {
+  background: var(--primary);
+  color: #fff;
+}
+
+.primary-btn:hover {
+  background: var(--primary-dark);
+}
+
+.secondary-btn {
+  background: #edf3ff;
+  color: var(--primary);
+}
+
+.danger-btn {
+  background: #fee3e3;
+  color: #c53030;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+label {
+  display: block;
+  color: var(--muted);
+  font-size: 0.9rem;
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+input, select, textarea {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #fff;
+  color: var(--text);
+  margin-bottom: 14px;
+}
+
+textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+.exam-list, .room-list {
+  display: grid;
+  gap: 18px;
+}
+
+.exam-item, .room-item {
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 18px 20px;
+  background: #fff;
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: center;
+}
+
+.exam-item h3 {
+  margin: 0 0 8px;
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.tag {
+  display: inline-block;
+  background: #edf3ff;
+  color: var(--primary);
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+.question-builder {
+  display: grid;
+  gap: 18px;
+  margin-top: 16px;
+}
+
+.question-box {
+  border: 1px solid var(--border);
+  border-radius: 15px;
+  padding: 16px;
+  background: #fafbff;
+}
+
+.answer-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.login-card {
+  max-width: 480px;
+  margin: 80px auto;
+}
+
+.auth-header {
+  margin-bottom: 24px;
+}
+
+.auth-header h1 {
+  margin: 0 0 8px;
+}
+
+.auth-header p {
+  margin: 0;
+  color: var(--muted);
+}
+
+.muted {
+  color: var(--muted);
+}
+
+.result-box {
+  padding: 18px;
+  background: #f2faf7;
+  border: 1px solid #cdeedb;
+  border-radius: 14px;
+}
+
+.question-card {
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 18px;
+  background: #fff;
+  margin-bottom: 18px;
+}
+
+.option-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.option-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: #f9fafb;
+}
+
+.option-item input {
+  margin: 0;
+  width: auto;
+}
+
+.empty-state {
+  color: var(--muted);
+  text-align: center;
+  padding: 32px 20px;
+}
+
+.ticket-card {
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 20px;
+  background: linear-gradient(135deg, #eef5ff, #f9fbff);
+}
+
+.ticket-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.ticket-badge {
+  display: inline-block;
+  background: var(--primary);
+  color: white;
+  border-radius: 999px;
+  padding: 7px 10px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.ticket-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px 20px;
+}
+
+.ticket-grid div {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 12px;
+  border: 1px solid #dfe8ff;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.5);
+}
+
+.ticket-grid span {
+  font-size: 0.72rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.ticket-grid strong {
+  font-size: 0.95rem;
+}
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 16px;
+}
+
+th, td {
+  text-align: left;
+  padding: 12px 10px;
+  border-bottom: 1px solid var(--border);
+}
+
+th {
+  background: #f8faff;
+}
+
+@media (max-width: 860px) {
+  .grid-3, .grid-2, .form-grid, .answer-row, .ticket-grid {
+    grid-template-columns: 1fr;
   }
 
-  return payload;
-}
-
-function App() {
-  const [token, setToken] = useState(localStorage.getItem('ems_token') || '');
-
-  useEffect(() => {
-    if (token) {
-      localStorage.setItem('ems_token', token);
-    } else {
-      localStorage.removeItem('ems_token');
-    }
-  }, [token]);
-
-  return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={token ? <Navigate to="/dashboard" replace /> : <LoginPage setToken={setToken} />} />
-        <Route path="/dashboard" element={token ? <DashboardPage token={token} setToken={setToken} /> : <Navigate to="/" replace />} />
-        <Route path="/exams" element={token ? <ExamsPage token={token} /> : <Navigate to="/" replace />} />
-        <Route path="/create-exam" element={token ? <CreateExamPage token={token} /> : <Navigate to="/" replace />} />
-        <Route path="/attempt/:examId" element={token ? <AttemptPage token={token} /> : <Navigate to="/" replace />} />
-        <Route path="/results" element={token ? <ResultsPage token={token} /> : <Navigate to="/" replace />} />
-        <Route path="/rooms" element={token ? <RoomsPage token={token} /> : <Navigate to="/" replace />} />
-        <Route path="/seat-allocation" element={token ? <SeatAllocationPage token={token} /> : <Navigate to="/" replace />} />
-        <Route path="/hall-ticket" element={token ? <HallTicketPage token={token} /> : <Navigate to="/" replace />} />
-      </Routes>
-    </BrowserRouter>
-  );
-}
-
-function LoginPage({ setToken }) {
-  const [form, setForm] = useState({ email: 'student@example.com', password: 'student123' });
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError('');
-
-    try {
-      const data = await apiRequest('/api/auth/login', {
-        method: 'POST',
-        body: JSON.stringify(form),
-      });
-
-      setToken(data.token);
-      navigate('/dashboard');
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <div className="page">
-      <div className="card login-card">
-        <div className="auth-header">
-          <h1>Exam Management System</h1>
-          <p>Sign in to manage assessments and results</p>
-        </div>
-
-        <form onSubmit={handleSubmit}>
-          <label>Email</label>
-          <input
-            type="email"
-            value={form.email}
-            onChange={(e) => setForm({ ...form, email: e.target.value })}
-            placeholder="name@example.com"
-            required
-          />
-
-          <label>Password</label>
-          <input
-            type="password"
-            value={form.password}
-            onChange={(e) => setForm({ ...form, password: e.target.value })}
-            placeholder="Password"
-            required
-          />
-
-          {error && <p className="muted" style={{ color: 'var(--danger)' }}>{error}</p>}
-
-          <button className="primary-btn" type="submit" style={{ width: '100%' }} disabled={loading}>
-            {loading ? 'Signing in...' : 'Login'}
-          </button>
-        </form>
-
-        <p className="muted" style={{ marginTop: 18, fontSize: '0.85rem' }}>
-          Demo accounts: admin@example.com / admin123, teacher@example.com / teacher123, student@example.com / student123
-        </p>
-      </div>
-    </div>
-  );
-}
-
-function DashboardPage({ token, setToken }) {
-  const [user, setUser] = useState(null);
-  const [stats, setStats] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    async function loadData() {
-      try {
-        const [userData, statsData] = await Promise.all([
-          apiRequest('/api/me', {}, token),
-          apiRequest('/api/dashboard', {}, token),
-        ]);
-        setUser(userData.user);
-        setStats(statsData);
-      } catch (error) {
-        console.error(error);
-        setToken('');
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    loadData();
-  }, [token, setToken]);
-
-  if (loading || !user || !stats) {
-    return <PageShell token={token} setToken={setToken} title="Loading dashboard..." />;
+  .topbar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
   }
 
-  return (
-    <PageShell token={token} setToken={setToken} title={`Welcome, ${user.name}`}>
-      <div className="grid grid-3">
-        <div className="card stat-card">
-          <div className="stat-label">Total Exams</div>
-          <div className="stat-value">{stats.totalExams}</div>
-        </div>
-        <div className="card stat-card">
-          <div className="stat-label">Students</div>
-          <div className="stat-value">{stats.totalStudents}</div>
-        </div>
-        <div className="card stat-card">
-          <div className="stat-label">Average Score</div>
-          <div className="stat-value">{stats.averageScore}%</div>
-        </div>
-      </div>
-
-      <div className="section-title" style={{ marginTop: 28 }}>
-        <h2>Quick actions</h2>
-      </div>
-
-      <div className="grid grid-2">
-        <div className="card">
-          <h3>Assessments</h3>
-          <p className="muted">Create and publish exam papers, manage question sets, and schedule tests.</p>
-          <Link to="/create-exam"><button className="primary-btn">Create Exam</button></Link>
-        </div>
-        <div className="card">
-          <h3>Results</h3>
-          <p className="muted">Check student progress, review marks, and monitor performance trends.</p>
-          <Link to="/results"><button className="secondary-btn">View Results</button></Link>
-        </div>
-        <div className="card">
-          <h3>Exam Rooms</h3>
-          <p className="muted">Add halls and manage seating arrangements for scheduled exams.</p>
-          <Link to="/rooms"><button className="secondary-btn">Manage Rooms</button></Link>
-        </div>
-        <div className="card">
-          <h3>Hall Tickets</h3>
-          <p className="muted">Generate seat allocation and download hall tickets for students.</p>
-          <Link to="/seat-allocation"><button className="secondary-btn">Seat Allocation</button></Link>
-        </div>
-      </div>
-    </PageShell>
-  );
-}
-
-function ExamsPage({ token }) {
-  const [exams, setExams] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    async function loadExams() {
-      try {
-        const data = await apiRequest('/api/exams', {}, token);
-        setExams(data.exams || []);
-      } catch (error) {
-        console.error(error);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    loadExams();
-  }, [token]);
-
-  return (
-    <PageShell token={token} title="Exams">
-      <div className="section-title">
-        <h2>Available assessments</h2>
-        <Link to="/create-exam"><button className="primary-btn">New exam</button></Link>
-      </div>
-
-      {loading ? (
-        <div className="card empty-state">Loading exams…</div>
-      ) : exams.length === 0 ? (
-        <div className="card empty-state">No exams have been created yet.</div>
-      ) : (
-        <div className="exam-list">
-          {exams.map((exam) => (
-            <div className="exam-item" key={exam.id}>
-              <div>
-                <h3>{exam.title}</h3>
-                <div className="meta">
-                  <span>{exam.course_name}</span>
-                  <span>{exam.duration_minutes} mins</span>
-                  <span>{exam.total_marks} marks</span>
-                </div>
-              </div>
-              <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-                <span className="tag">{exam.status}</span>
-                <Link to={`/attempt/${exam.id}`}><button className="primary-btn">Attempt</button></Link>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-    </PageShell>
-  );
-}
-
-function CreateExamPage({ token }) {
-  const [form, setForm] = useState({
-    title: '',
-    courseId: '1',
-    durationMinutes: '60',
-    totalMarks: '100',
-    startTime: '',
-    endTime: '',
-  });
-  const [questions, setQuestions] = useState([
-    {
-      text: '',
-      type: 'mcq',
-      marks: '10',
-      options: ['Option 1', 'Option 2', 'Option 3', 'Option 4'],
-      correctAnswer: 'Option 1',
-    },
-  ]);
-  const [courses, setCourses] = useState([]);
-  const [message, setMessage] = useState('');
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    async function loadCourses() {
-      try {
-        const data = await apiRequest('/api/courses', {}, token);
-        setCourses(data.courses || []);
-        if (data.courses?.length) {
-          setForm((prev) => ({ ...prev, courseId: String(data.courses[0].id) }));
-        }
-      } catch (error) {
-        console.error(error);
-      }
-    }
-
-    loadCourses();
-  }, [token]);
-
-  const addQuestion = () => {
-    setQuestions((prev) => [
-      ...prev,
-      {
-        text: '',
-        type: 'mcq',
-        marks: '10',
-        options: ['Option 1', 'Option 2', 'Option 3', 'Option 4'],
-        correctAnswer: 'Option 1',
-      },
-    ]);
-  };
-
-  const updateQuestion = (index, field, value) => {
-    setQuestions((prev) => {
-      const next = [...prev];
-      next[index] = { ...next[index], [field]: value };
-      return next;
-    });
-  };
-
-  const updateOption = (questionIndex, optionIndex, value) => {
-    setQuestions((prev) => {
-      const next = [...prev];
-      next[questionIndex].options[optionIndex] = value;
-      return next;
-    });
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setMessage('');
-
-    try {
-      await apiRequest('/api/exams', {
-        method: 'POST',
-        body: JSON.stringify({ ...form, questions }),
-      }, token);
-
-      navigate('/exams');
-    } catch (error) {
-      setMessage(error.message);
-    }
-  };
-
-  return (
-    <PageShell token={token} title="Create exam">
-      <div className="card">
-        <form onSubmit={handleSubmit}>
-          <div className="form-grid">
-            <div>
-              <label>Title</label>
-              <input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} required />
-            </div>
-            <div>
-              <label>Course</label>
-              <select value={form.courseId} onChange={(e) => setForm({ ...form, courseId: e.target.value })}>
-                {courses.map((course) => (
-                  <option key={course.id} value={course.id}>{course.name}</option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label>Duration (minutes)</label>
-              <input type="number" value={form.durationMinutes} onChange={(e) => setForm({ ...form, durationMinutes: e.target.value })} required />
-            </div>
-            <div>
-              <label>Total marks</label>
-              <input type="number" value={form.totalMarks} onChange={(e) => setForm({ ...form, totalMarks: e.target.value })} required />
-            </div>
-            <div>
-              <label>Start time</label>
-              <input type="datetime-local" value={form.startTime} onChange={(e) => setForm({ ...form, startTime: e.target.value })} required />
-            </div>
-            <div>
-              <label>End time</label>
-              <input type="datetime-local" value={form.endTime} onChange={(e) => setForm({ ...form, endTime: e.target.value })} required />
-            </div>
-          </div>
-
-          <div className="section-title" style={{ marginTop: 28 }}>
-            <h2>Questions</h2>
-            <button type="button" className="secondary-btn" onClick={addQuestion}>Add question</button>
-          </div>
-
-          <div className="question-builder">
-            {questions.map((question, index) => (
-              <div className="question-box" key={index}>
-                <div className="form-grid">
-                  <div style={{ gridColumn: '1 / -1' }}>
-                    <label>Question text</label>
-                    <textarea value={question.text} onChange={(e) => updateQuestion(index, 'text', e.target.value)} required />
-                  </div>
-
-                  <div>
-                    <label>Type</label>
-                    <select value={question.type} onChange={(e) => updateQuestion(index, 'type', e.target.value)}>
-                      <option value="mcq">MCQ</option>
-                      <option value="text">Text</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label>Marks</label>
-                    <input type="number" value={question.marks} onChange={(e) => updateQuestion(index, 'marks', e.target.value)} required />
-                  </div>
-                </div>
-
-                {question.type === 'mcq' && (
-                  <div style={{ marginTop: 16 }}>
-                    <label>Options</label>
-                    <div className="answer-row">
-                      {question.options.map((option, optionIndex) => (
-                        <input
-                          key={optionIndex}
-                          value={option}
-                          onChange={(e) => updateOption(index, optionIndex, e.target.value)}
-                        />
-                      ))}
-                    </div>
-
-                    <label style={{ marginTop: 12 }}>Correct answer</label>
-                    <select value={question.correctAnswer} onChange={(e) => updateQuestion(index, 'correctAnswer', e.target.value)}>
-                      {question.options.map((option) => (
-                        <option key={option} value={option}>{option}</option>
-                      ))}
-                    </select>
-                  </div>
-                )}
-
-                {question.type === 'text' && (
-                  <div style={{ marginTop: 16 }}>
-                    <label>Expected answer</label>
-                    <input value={question.correctAnswer} onChange={(e) => updateQuestion(index, 'correctAnswer', e.target.value)} />
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-
-          {message && <p style={{ color: 'var(--danger)', marginTop: 18 }}>{message}</p>}
-
-          <div style={{ marginTop: 24 }}>
-            <button className="primary-btn" type="submit">Create exam</button>
-          </div>
-        </form>
-      </div>
-    </PageShell>
-  );
-}
-
-function AttemptPage({ token }) {
-  const { examId } = useParams();
-  const [exam, setExam] = useState(null);
-  const [answers, setAnswers] = useState({});
-  const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    async function loadExam() {
-      try {
-        const data = await apiRequest(`/api/exams/${examId}`, {}, token);
-        setExam(data.exam);
-        const initial = {};
-        data.exam.questions.forEach((q) => {
-          initial[q.id] = q.type === 'mcq' ? '' : '';
-        });
-        setAnswers(initial);
-      } catch (error) {
-        console.error(error);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    loadExam();
-  }, [examId, token]);
-
-  const handleAnswerChange = (questionId, value) => {
-    setAnswers((prev) => ({ ...prev, [questionId]: value }));
-  };
-
-  const handleSubmit = async () => {
-    const payload = Object.entries(answers).map(([questionId, value]) => ({ questionId: Number(questionId), value }));
-
-    try {
-      const result = await apiRequest(`/api/attempts/${examId}/submit`, {
-        method: 'POST',
-        body: JSON.stringify({ answers: payload }),
-      }, token);
-
-      navigate('/results', { state: { lastResult: result } });
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
-  if (loading || !exam) {
-    return <PageShell token={token} title="Loading exam..." />;
+  .exam-item {
+    flex-direction: column;
+    align-items: flex-start;
   }
-
-  return (
-    <PageShell token={token} title={exam.title}>
-      <div className="card">
-        <div className="meta" style={{ marginBottom: 18 }}>
-          <span>{exam.course_name}</span>
-          <span>{exam.duration_minutes} mins</span>
-          <span>{exam.total_marks} marks</span>
-        </div>
-
-        {exam.questions.map((question, idx) => (
-          <div className="question-card" key={question.id}>
-            <h3>Q{idx + 1}. {question.text}</h3>
-            <p className="muted">Marks: {question.marks}</p>
-
-            {question.type === 'mcq' ? (
-              <div className="option-list">
-                {question.options.map((option) => (
-                  <label key={option} className="option-item">
-                    <input
-                      type="radio"
-                      name={`q-${question.id}`}
-                      checked={answers[question.id] === option}
-                      onChange={() => handleAnswerChange(question.id, option)}
-                    />
-                    <span>{option}</span>
-                  </label>
-                ))}
-              </div>
-            ) : (
-              <textarea
-                value={answers[question.id] || ''}
-                onChange={(e) => handleAnswerChange(question.id, e.target.value)}
-                placeholder="Type your answer here"
-              />
-            )}
-          </div>
-        ))}
-
-        <button className="primary-btn" onClick={handleSubmit}>Submit exam</button>
-      </div>
-    </PageShell>
-  );
 }
-
-function ResultsPage({ token }) {
-  const [results, setResults] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    async function loadResults() {
-      try {
-        const data = await apiRequest('/api/results', {}, token);
-        setResults(data.results || []);
-      } catch (error) {
-        console.error(error);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    loadResults();
-  }, [token]);
-
-  return (
-    <PageShell token={token} title="Results">
-      {loading ? (
-        <div className="card empty-state">Loading results…</div>
-      ) : results.length === 0 ? (
-        <div className="card empty-state">No results found yet.</div>
-      ) : (
-        <div className="exam-list">
-          {results.map((result) => (
-            <div className="result-box" key={result.id}>
-              <h3>{result.title}</h3>
-              <div className="meta">
-                <span>Score: {result.score}/{result.total_marks}</span>
-                <span>Percentage: {result.percentage}%</span>
-                <span>Submitted: {new Date(result.submitted_at).toLocaleString()}</span>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-    </PageShell>
-  );
-}
-
-function RoomsPage({ token }) {
-  const [rooms, setRooms] = useState([]);
-  const [form, setForm] = useState({ name: '', capacity: 30, building: '' });
-  const [message, setMessage] = useState('');
-
-  const loadRooms = async () => {
-    try {
-      const data = await apiRequest('/api/rooms', {}, token);
-      setRooms(data.rooms || []);
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
-  useEffect(() => {
-    loadRooms();
-  }, [token]);
-
-  const handleCreateRoom = async (e) => {
-    e.preventDefault();
-    try {
-      await apiRequest('/api/rooms', {
-        method: 'POST',
-        body: JSON.stringify(form),
-      }, token);
-      setForm({ name: '', capacity: 30, building: '' });
-      setMessage('Room created successfully');
-      loadRooms();
-    } catch (error) {
-      setMessage(error.message);
-    }
-  };
-
-  return (
-    <PageShell token={token} title="Room management">
-      <div className="grid grid-2">
-        <div className="card">
-          <h3>Add a hall</h3>
-          <form onSubmit={handleCreateRoom}>
-            <label>Room Name</label>
-            <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
-
-            <label>Capacity</label>
-            <input type="number" value={form.capacity} onChange={(e) => setForm({ ...form, capacity: e.target.value })} required />
-
-            <label>Building</label>
-            <input value={form.building} onChange={(e) => setForm({ ...form, building: e.target.value })} required />
-
-            {message && <p style={{ color: 'var(--success)' }}>{message}</p>}
-
-            <button className="primary-btn" type="submit">Create room</button>
-          </form>
-        </div>
-
-        <div className="card">
-          <h3>Available halls</h3>
-          {rooms.length === 0 ? (
-            <p className="muted">No halls created yet.</p>
-          ) : (
-            <div className="room-list">
-              {rooms.map((room) => (
-                <div className="room-item" key={room.id}>
-                  <strong>{room.name}</strong>
-                  <div className="meta">
-                    <span>{room.building}</span>
-                    <span>{room.capacity} seats</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
-    </PageShell>
-  );
-}
-
-function SeatAllocationPage({ token }) {
-  const [exams, setExams] = useState([]);
-  const [selectedExam, setSelectedExam] = useState('');
-  const [allocations, setAllocations] = useState([]);
-  const [message, setMessage] = useState('');
-
-  useEffect(() => {
-    async function loadData() {
-      try {
-        const data = await apiRequest('/api/exams', {}, token);
-        setExams(data.exams || []);
-        if (data.exams?.length) setSelectedExam(String(data.exams[0].id));
-      } catch (error) {
-        console.error(error);
-      }
-    }
-
-    loadData();
-  }, [token]);
-
-  useEffect(() => {
-    if (!selectedExam) return;
-    async function loadAllocations() {
-      try {
-        const data = await apiRequest(`/api/exams/${selectedExam}/seat-allocation`, {}, token);
-        setAllocations(data.allocations || []);
-      } catch (error) {
-        console.error(error);
-      }
-    }
-    loadAllocations();
-  }, [selectedExam, token]);
-
-  const handleAllocate = async () => {
-    try {
-      const data = await apiRequest(`/api/exams/${selectedExam}/allocation`, { method: 'POST' }, token);
-      setAllocations(data.allocations || []);
-      setMessage('Seat allocation generated successfully');
-    } catch (error) {
-      setMessage(error.message);
-    }
-  };
-
-  return (
-    <PageShell token={token} title="Seat allotment">
-      <div className="card">
-        <label>Select exam</label>
-        <select value={selectedExam} onChange={(e) => setSelectedExam(e.target.value)}>
-          {exams.map((exam) => (
-            <option key={exam.id} value={exam.id}>{exam.title}</option>
-          ))}
-        </select>
-
-        <button className="primary-btn" onClick={handleAllocate}>Allocate seats</button>
-        {message && <p style={{ marginTop: 16, color: 'var(--success)' }}>{message}</p>}
-      </div>
-
-      <div className="card" style={{ marginTop: 20 }}>
-        <h3>Allocation list</h3>
-        {allocations.length === 0 ? (
-          <p className="muted">No seat allocation generated yet.</p>
-        ) : (
-          <div className="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>Student</th>
-                  <th>Email</th>
-                  <th>Room</th>
-                  <th>Seat</th>
-                </tr>
-              </thead>
-              <tbody>
-                {allocations.map((item) => (
-                  <tr key={item.id}>
-                    <td>{item.student_name}</td>
-                    <td>{item.email}</td>
-                    <td>{item.room_name} ({item.building})</td>
-                    <td>{item.seat_number}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
-    </PageShell>
-  );
-}
-
-function HallTicketPage({ token }) {
-  const [exams, setExams] = useState([]);
-  const [selectedExam, setSelectedExam] = useState('');
-  const [ticket, setTicket] = useState(null);
-  const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    async function loadExams() {
-      try {
-        const data = await apiRequest('/api/exams', {}, token);
-        setExams(data.exams || []);
-        if (data.exams?.length) setSelectedExam(String(data.exams[0].id));
-      } catch (error) {
-        console.error(error);
-      }
-    }
-    loadExams();
-  }, [token]);
-
-  useEffect(() => {
-    if (!selectedExam) return;
-    async function getTicket() {
-      try {
-        const me = await apiRequest('/api/me', {}, token);
-        const data = await apiRequest(`/api/exams/${selectedExam}/hall-ticket/${me.user.id}`, {}, token);
-        setTicket(data.ticket);
-      } catch (error) {
-        setTicket(null);
-      }
-    }
-    getTicket();
-  }, [selectedExam, token]);
-
-  const downloadTicket = async () => {
-    if (!selectedExam || !ticket) return;
-    const me = await apiRequest('/api/me', {}, token);
-    window.open(`${API_BASE}/api/hall-ticket/${selectedExam}/${me.user.id}/pdf`, '_blank');
-  };
-
-  return (
-    <PageShell token={token} title="Hall ticket">
-      <div className="card">
-        <label>Select exam</label>
-        <select value={selectedExam} onChange={(e) => setSelectedExam(e.target.value)}>
-          {exams.map((exam) => (
-            <option key={exam.id} value={exam.id}>{exam.title}</option>
-          ))}
-        </select>
-
-        {ticket ? (
-          <div style={{ marginTop: 20 }}>
-            <div className="ticket-card">
-              <h3>{ticket.exam_title}</h3>
-              <p><strong>Student:</strong> {ticket.student_name}</p>
-              <p><strong>Course:</strong> {ticket.course_name}</p>
-              <p><strong>Date:</strong> {ticket.examDate}</p>
-              <p><strong>Time:</strong> {ticket.examTime}</p>
-              <p><strong>Room:</strong> {ticket.room_name} ({ticket.building})</p>
-              <p><strong>Seat Number:</strong> {ticket.seat_number}</p>
-            </div>
-            <button className="primary-btn" style={{ marginTop: 16 }} onClick={downloadTicket}>Download PDF</button>
-          </div>
-        ) : (
-          <p className="muted" style={{ marginTop: 20 }}>No hall ticket found for the selected exam.</p>
-        )}
-      </div>
-    </PageShell>
-  );
-}
-
-function PageShell({ token, setToken, title, children }) {
-  const navigate = useNavigate();
-
-  const logout = () => {
-    localStorage.removeItem('ems_token');
-    setToken ? setToken('') : null;
-    navigate('/');
-  };
-
-  return (
-    <div className="app-shell">
-      <header className="topbar">
-        <div className="logo">ExamFlow</div>
-        <nav className="nav">
-          <Link to="/dashboard">Dashboard</Link>
-          <Link to="/exams">Exams</Link>
-          <Link to="/rooms">Rooms</Link>
-          <Link to="/seat-allocation">Seat Allocation</Link>
-          <Link to="/hall-ticket">Hall Ticket</Link>
-          <Link to="/results">Results</Link>
-          <button onClick={logout}>Logout</button>
-        </nav>
-      </header>
-
-      <main className="page">
-        <div className="section-title">
-          <h2>{title}</h2>
-        </div>
-        {children}
-      </main>
-    </div>
-  );
-}
-
-export default App;
